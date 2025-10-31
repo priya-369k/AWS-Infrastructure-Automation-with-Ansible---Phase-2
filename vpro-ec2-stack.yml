@@ -57,4 +57,118 @@
 
       register: vproStackSG_out
 
+    - name: Create security grp with its owm sg id
+      ec2_group:
+         name: vproStack-sg
+         description: Allow port 22 from everywhere and all port with in sg
+         region: "{{region}}"
+         vpc_id: "{{vpcid}}"
+         purge_rules: no
+         rules:
+           - proto: all
+             group_id: "{{vproStackSG_out.group_id}}"
+
+    - name: Creating Nginx web01
+      amazon.aws.ec2_instance:
+        key_name: vprokey
+        region: "{{region}}"
+        instance_type: t3.micro
+        image_id: "{{ngnix_ami}}"
+        wait: yes
+        wait_timeout: 300
+        tags:
+          Name: "web01"
+          project: Vprofile
+          owner: Devops Team
+        exact_count: 1
+        count_tag:
+           Name: "web01"
+           project: Vprofile
+        group_id: "{{vproStackSG_out.group_id}}"
+        vpc_subnet_id: "{{privsub1id}}"
+      register: web01_out
+
+    - name: Creating tomcat app01
+      amazon.aws.ec2_instance:
+        key_name: vprokey
+        region: "{{region}}"
+        instance_type: t3.micro
+        image_id: "{{tomcat_ami}}"
+        wait: yes
+        wait_timeout: 300
+        tags:
+          Name: "app01"
+          project: Vprofile
+          owner: Devops Team
+        exact_count: 1
+        count_tag:
+           Name: "app01"
+           project: Vprofile
+        group_id: "{{vproStackSG_out.group_id}}"
+        vpc_subnet_id: "{{privsub1id}}"
+      register: app01_out
+
+    - name: Creating memcache mc01
+      amazon.aws.ec2_instance:
+        key_name: vprokey
+        region: "{{region}}"
+        instance_type: t3.micro
+        image_id: "{{memcache_ami}}"
+        wait: yes
+        wait_timeout: 300
+        tags:
+          Name: "mc01"
+          project: Vprofile
+          owner: Devops Team
+        exact_count: 1
+        count_tag:
+           Name: "mc01"
+           project: Vprofile
+        group_id: "{{vproStackSG_out.group_id}}"
+        vpc_subnet_id: "{{privsub1id}}"
+      register: mc01_out
+
+    - name: Creating RabbitMQ rmq01
+      amazon.aws.ec2_instance:
+        key_name: vprokey
+        region: "{{region}}"
+        instance_type: t3.micro
+        image_id: "{{rmq_ami}}"
+        wait: yes
+        wait_timeout: 300
+        tags:
+          Name: "rmq01"
+          project: Vprofile
+          owner: Devops Team
+        exact_count: 1
+        count_tag:
+           Name: "rmq01"
+           project: Vprofile
+        group_id: "{{vproStackSG_out.group_id}}"
+        vpc_subnet_id: "{{privsub1id}}"
+      register: rmq01_out
+
+    - name: Creating Mysql db01
+      amazon.aws.ec2_instance:
+        key_name: vprokey
+        region: "{{region}}"
+        instance_type: t3.micro
+        image_id: "{{mysql_ami}}"
+        wait: yes
+        wait_timeout: 300
+        tags:
+          Name: "db01"
+          project: Vprofile
+          owner: Devops Team
+        exact_count: 1
+        count_tag:
+           Name: "db01"
+           project: Vprofile
+        group_id: "{{vproStackSG_out.group_id}}"
+        vpc_subnet_id: "{{privsub1id}}"
+      register: db01_out
+
+    - debug:
+    var: db01_out.tagged_instances[0].id
+
 
